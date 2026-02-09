@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: Spring Security Jwt 3
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/secjwt3
+    username: postgres
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+server:
+  port: 8443  # HTTPS port
+
+
+app:
+  jwt:
+    secret: 00ce4de85369325d67c25f4146a0b4ec09d47b1d0a30636354e58fb287a88736
+  security:
+    max-failed-attempts: 5
+    lockout-duration-minutes: 1
