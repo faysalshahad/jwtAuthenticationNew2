@@ -1,13 +1,12 @@
 package com.springsecurityjwt3.springSecurityJwt3.config;
 
 import com.springsecurityjwt3.springSecurityJwt3.service.UserEntityService;
-import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,6 +28,7 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
+    //@Value("${app.security.pepper}")
     private final String PEPPERSECRETKEY = "4AnRtF;gZQ9wNDxC";
 
     @Bean
@@ -53,7 +53,11 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/auth/login").permitAll()
+                        auth
+                                // Publicly accessible
+                                .requestMatchers("/auth/login", "/auth/register").permitAll()
+                                // Requires a token
+                                .requestMatchers("/auth/logout").authenticated()
                                 .anyRequest().authenticated()
                         );
         httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

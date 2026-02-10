@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -91,6 +94,32 @@ public class AuthController {
             return "Invalid Password. Attempt " + user.getFailedAttempt() + " of 5";
         }
 
+    }
+
+    @PostMapping("/logout")
+    public String logout() {
+        // 1. Get Authentication from context
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 2. Check if the user is actually logged in
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "Error: No active session found to logout.";
+        }
+
+        // 3. Get username safely
+        String username = auth.getName();
+
+        // 4. Update the database
+        UserEntity user = userEntityRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+
+        user.setLastLogoutDate(LocalDateTime.now());
+        userEntityRepository.save(user);
+
+        // 5. Clear the Security Context for this specific request
+        SecurityContextHolder.clearContext();
+
+        return "Successfully logged out. Your token is now invalidated.";
     }
 
 }

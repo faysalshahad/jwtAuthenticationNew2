@@ -8,7 +8,7 @@ spring:
     password: 123456
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
 
 server:
   port: 8443  # HTTPS port
@@ -17,6 +17,8 @@ server:
 app:
   jwt:
     secret: 00ce4de85369325d67c25f4146a0b4ec09d47b1d0a30636354e58fb287a88736
+    # pepper: 71fa35b5217abc6ed74a74415c989839b48ff3534b38557fa6abe4942aa504cd
   security:
     max-failed-attempts: 5
     lockout-duration-minutes: 1
+

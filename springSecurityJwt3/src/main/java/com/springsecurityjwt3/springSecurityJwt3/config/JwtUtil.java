@@ -58,6 +58,15 @@ public class JwtUtil {
         }
     }
 
+    public Date getIssuedAtDateFromToken(String token) {
+        return Jwts.parser()
+                .verifyWith((SecretKey) getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getIssuedAt();
+    }
+
 
 
 }

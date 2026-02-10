@@ -24,10 +24,19 @@ public class UserEntity {
     private int failedAttempt = 0;
     private LocalDateTime lockTime;
 
+    private LocalDateTime lastLogoutDate;
+
     public UserEntity() {
     }
 
-    public UserEntity(Long id, String username, String password, String role, boolean accountNonLocked, int failedAttempt, LocalDateTime lockTime) {
+    public UserEntity(Long id,
+                      String username,
+                      String password,
+                      String role,
+                      boolean accountNonLocked,
+                      int failedAttempt,
+                      LocalDateTime lockTime,
+                      LocalDateTime lastLogoutDate) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -35,6 +44,7 @@ public class UserEntity {
         this.accountNonLocked = accountNonLocked;
         this.failedAttempt = failedAttempt;
         this.lockTime = lockTime;
+        this.lastLogoutDate = lastLogoutDate;
     }
 
     public Long getId() {
@@ -91,5 +101,13 @@ public class UserEntity {
 
     public void setLockTime(LocalDateTime lockTime) {
         this.lockTime = lockTime;
+    }
+
+    public LocalDateTime getLastLogoutDate() {
+        return lastLogoutDate;
+    }
+
+    public void setLastLogoutDate(LocalDateTime lastLogoutDate) {
+        this.lastLogoutDate = lastLogoutDate;
     }
 }
