@@ -32,6 +32,9 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private UserEntityRepository userEntityRepository;
 
+    @Autowired
+    private ServerMetadata serverMetadata;
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
@@ -72,7 +75,17 @@ public class JwtFilter extends OncePerRequestFilter {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
 
-                // 3. Revocation Check
+                System.out.println("Token Issued At: " + issuedAtLDT);
+                System.out.println("Server Start At: " + serverMetadata.getServerStartTime());
+
+                // --- NEW: SERVER RESTART CHECK ---
+                // If the token was issued before the current server instance started, reject it.
+                if(issuedAtLDT.isBefore(serverMetadata.getServerStartTime())){
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session expired due to server restart. Please login again.");
+                    return;
+                }
+
+                // Revocation Check
                 if (userEntity.getLastLogoutDate() != null &&
                         issuedAtLDT.isBefore(userEntity.getLastLogoutDate())) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked.");
