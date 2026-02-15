@@ -78,7 +78,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 System.out.println("Token Issued At: " + issuedAtLDT);
                 System.out.println("Server Start At: " + serverMetadata.getServerStartTime());
 
-                // --- NEW: SERVER RESTART CHECK ---
+                // --- SERVER RESTART CHECK ---
                 // If the token was issued before the current server instance started, reject it.
                 if(issuedAtLDT.isBefore(serverMetadata.getServerStartTime())){
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session expired due to server restart. Please login again.");

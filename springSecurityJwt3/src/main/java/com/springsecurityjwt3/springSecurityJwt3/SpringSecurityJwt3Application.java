@@ -10,8 +10,8 @@ public class SpringSecurityJwt3Application {
 	public static void main(String[] args) {
 
 		// Get the current working directory to see where we are looking
-		String rootPath = System.getProperty("user.dir");
-		System.out.println("Looking for .env in: " + rootPath);
+//		String rootPath = System.getProperty("user.dir");
+//		System.out.println("Looking for .env in: " + rootPath);
 
 		//Making sure that system or main application reads .env files
 		// Load .env file
