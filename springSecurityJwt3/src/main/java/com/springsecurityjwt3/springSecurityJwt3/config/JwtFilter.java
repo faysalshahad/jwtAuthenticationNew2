@@ -93,10 +93,10 @@ public class JwtFilter extends OncePerRequestFilter {
 //                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
 //                        userDetails, null, userDetails.getAuthorities());
 
-                // 3️⃣ Extract roles FROM JWT
+                // Extract roles FROM JWT
                 var authorities = jwtUtil.getAuthoritiesFromToken(jwt);
 
-                // 4️⃣ Create Authentication
+                // Create Authentication
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
                                 username,
