@@ -2,7 +2,6 @@ package com.springsecurityjwt3.springSecurityJwt3.config;
 
 import com.springsecurityjwt3.springSecurityJwt3.entity.UserEntity;
 import com.springsecurityjwt3.springSecurityJwt3.repository.UserEntityRepository;
-import com.springsecurityjwt3.springSecurityJwt3.service.UserEntityService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,11 +9,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.GrantedAuthority;
 
+import java.util.List;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -26,8 +26,8 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private UserEntityService userEntityService;
+//    @Autowired
+//    private UserEntityService userEntityService;
 
     @Autowired
     private UserEntityRepository userEntityRepository;
@@ -63,7 +63,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         //Validating Token and Setting Security Context
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
-            UserDetails userDetails = this.userEntityService.loadUserByUsername(username);
+            //UserDetails userDetails = this.userEntityService.loadUserByUsername(username);
 
             // Fetch the entity to check the logout timestamp
             UserEntity userEntity = userEntityRepository.findByUsername(username).orElse(null);
@@ -92,8 +92,19 @@ public class JwtFilter extends OncePerRequestFilter {
                     return; // Stop here if revoked
                 }
 
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+//                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+//                        userDetails, null, userDetails.getAuthorities());
+
+                // 3️⃣ Extract roles FROM JWT
+                var authorities = jwtUtil.getAuthoritiesFromToken(jwt);
+
+                // 4️⃣ Create Authentication
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(
+                                username,
+                                null,
+                                authorities
+                        );
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }

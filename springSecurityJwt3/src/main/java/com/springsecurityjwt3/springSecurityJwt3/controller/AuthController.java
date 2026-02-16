@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
@@ -37,27 +38,69 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+//    @PostMapping("/register")
+//    public String register(@RequestBody UserEntity userEntity){
+//        if (userEntityRepository.findByUsername(userEntity.getUsername()).isPresent()){
+//            return "Error! User name has already been taken";
+//        }
+//
+//        UserEntity newUser = new UserEntity();
+//        newUser.setUsername(userEntity.getUsername());
+//        newUser.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+//
+//        newUser.setAccountNonLocked(true);
+//        newUser.setFailedAttempt(0);
+//        newUser.setLockTime(null);
+//        if(userEntity.getRole() == null ){
+//            newUser.setRole("USER");
+//        }else {
+//            newUser.setRole(userEntity.getRole().toUpperCase());
+//        }
+//        userEntityRepository.save(newUser);
+//        return "User Registered Successfully";
+//    }
+
     @PostMapping("/register")
     public String register(@RequestBody UserEntity userEntity){
-        if (userEntityRepository.findByUsername(userEntity.getUsername()).isPresent()){
-            return "Error! User name has already been taken";
+
+        if (userEntityRepository.findByUsername(userEntity.getUsername()).isPresent()) {
+            return "Error! Username already exists";
+        }
+
+        // Allowed roles
+        Set<String> allowedRoles = Set.of(
+                "USER",
+                "ADMIN",
+                "SUPER_ADMIN",
+                "GUEST"
+        );
+
+        String role = userEntity.getRole();
+
+        if (role == null || role.isBlank()) {
+            role = "USER"; // default
+        } else {
+            role = role.toUpperCase().replace(" ", "_");
+        }
+
+        if (!allowedRoles.contains(role)) {
+            return "Invalid role selected";
         }
 
         UserEntity newUser = new UserEntity();
         newUser.setUsername(userEntity.getUsername());
         newUser.setPassword(passwordEncoder.encode(userEntity.getPassword()));
+        newUser.setRole(role);
 
         newUser.setAccountNonLocked(true);
         newUser.setFailedAttempt(0);
         newUser.setLockTime(null);
-        if(userEntity.getRole() == null ){
-            newUser.setRole("USER");
-        }else {
-            newUser.setRole(userEntity.getRole().toUpperCase());
-        }
+
         userEntityRepository.save(newUser);
-        return "User Registered Successfully";
+
+        return "User registered successfully with role: " + role;
     }
+
 
     @PostMapping("/login")
     public String loginController(@RequestBody UserEntity userEntity){
@@ -83,7 +126,10 @@ public class AuthController {
             user.setFailedAttempt(0);
             user.setLockTime(null);
             userEntityRepository.save(user);
-            return jwtUtil.generateToken(user.getUsername());
+            return jwtUtil.generateToken(
+                    user.getUsername(),
+                    user.getRole()
+            );
         } catch (AuthenticationException e) {
            userEntityService.increaseFailedAttempts(user);
             if (user.getFailedAttempt() >= 5) {
