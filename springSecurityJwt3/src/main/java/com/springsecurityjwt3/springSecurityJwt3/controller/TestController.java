@@ -12,21 +12,21 @@ public class TestController {
 
 
     @GetMapping(value = "/all")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> getNew()
     {
         return ResponseEntity.ok("Success. Public Content: Visible to any logged-in user.");
     }
 
     @GetMapping(value = "/admin")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> getAdmin()
     {
         return ResponseEntity.ok("Admin Board: Only Admins and Super Admins can see this.");
     }
 
     @GetMapping(value = "/super-admin")
-    @PreAuthorize("hasAnyRole('SUPER ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> getSuperAdmin()
     {
         return ResponseEntity.ok("Super Admin Secret: Higher level access granted.");
