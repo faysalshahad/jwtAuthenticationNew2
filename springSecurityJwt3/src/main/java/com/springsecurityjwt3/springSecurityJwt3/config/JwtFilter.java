@@ -24,9 +24,6 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-//    @Autowired
-//    private UserEntityService userEntityService;
-
     @Autowired
     private UserEntityRepository userEntityRepository;
 

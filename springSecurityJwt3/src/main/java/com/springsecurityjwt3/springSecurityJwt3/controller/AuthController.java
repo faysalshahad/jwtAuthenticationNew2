@@ -38,27 +38,6 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-//    @PostMapping("/register")
-//    public String register(@RequestBody UserEntity userEntity){
-//        if (userEntityRepository.findByUsername(userEntity.getUsername()).isPresent()){
-//            return "Error! User name has already been taken";
-//        }
-//
-//        UserEntity newUser = new UserEntity();
-//        newUser.setUsername(userEntity.getUsername());
-//        newUser.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-//
-//        newUser.setAccountNonLocked(true);
-//        newUser.setFailedAttempt(0);
-//        newUser.setLockTime(null);
-//        if(userEntity.getRole() == null ){
-//            newUser.setRole("USER");
-//        }else {
-//            newUser.setRole(userEntity.getRole().toUpperCase());
-//        }
-//        userEntityRepository.save(newUser);
-//        return "User Registered Successfully";
-//    }
 
     @PostMapping("/register")
     public String register(@RequestBody UserEntity userEntity){
