@@ -5,20 +5,24 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/secjwt3
     username: postgres
-    password: ${DB_PASSWORD} # Reads from .env
+    password: ${DB_PASSWORD_ENV} # Reads from .env
   jpa:
     hibernate:
       ddl-auto: update
 
-server:
-  port: 8443  # HTTPS port
+# server:
+#   port: 8443 # HTTPS port
 
+server:
+  port: 8080 # HTTP port
 
 app:
   jwt:
-    secret: ${JWT_SECRET} # Reads from .env
+    secret: ${JWT_SECRET_ENV} # Reads from .env
   security:
-    pepper: ${PEPPER_KEY} # Reads from .env
-    max-failed-attempts: 5
-    lockout-duration-minutes: 1
+    pepper: ${PEPPER_KEY_ENV} # Reads from .env
+    max-failed-attempts: ${MAX_FAILED_ATTEMPTS_ENV} # Reads from .env
+    lockout-duration-minutes: ${LOCKOUT_DURATION_MINUTES_ENV} # Reads from .env
+    expiration-time-access-token: ${EXPIRATION_TIME_ACCESS_TOKEN_ENV} # Reads from .env
+    expiration-time-refresh-token: ${EXPIRATION_TIME_REFRESH_TOKEN_ENV} # Reads from .env
 

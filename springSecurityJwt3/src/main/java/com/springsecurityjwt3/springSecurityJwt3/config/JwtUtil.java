@@ -19,7 +19,9 @@ public class JwtUtil {
 
     @Value("${app.jwt.secret}")
     private String jwtSecretKey;
-    private final long expirationTime = 1000 * 60 * 60 * 24;
+
+    @Value("${app.security.expiration-time-access-token}")
+    private long expirationTime;
 
     //helper method
     private Key getSigningKey(){
@@ -28,14 +30,19 @@ public class JwtUtil {
     }
 
     public String generateToken(String username,  String role) {
+        String finalRole = (role.startsWith("ROLE_")) ? role : "ROLE_" + role;
         return Jwts
                 .builder()
                 .subject(username)
-                .claim("roles", "ROLE_" + role)
+                .claim("roles", finalRole) // Consistency check
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public String generateRefreshToken(){
+        return java.util.UUID.randomUUID().toString();
     }
 
     public String getuserNameFromToken(String token){

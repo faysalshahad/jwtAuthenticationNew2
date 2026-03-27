@@ -1,148 +1,104 @@
 package com.springsecurityjwt3.springSecurityJwt3.controller;
 
-import com.springsecurityjwt3.springSecurityJwt3.config.JwtUtil;
+import com.springsecurityjwt3.dto.AuthResponse;
+import com.springsecurityjwt3.dto.LoginRequest;
+import com.springsecurityjwt3.dto.RegisterRequest;
+import com.springsecurityjwt3.dto.TokenRefreshRequest;
+import com.springsecurityjwt3.dto.UserSummaryDTO;
 import com.springsecurityjwt3.springSecurityJwt3.entity.UserEntity;
 import com.springsecurityjwt3.springSecurityJwt3.repository.UserEntityRepository;
-import com.springsecurityjwt3.springSecurityJwt3.service.UserEntityService;
+import com.springsecurityjwt3.springSecurityJwt3.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private AuthService authService;
 
     @Autowired
     private UserEntityRepository userEntityRepository;
 
-    @Autowired
-    private UserEntityService userEntityService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
 
     @PostMapping("/register")
-    public String register(@RequestBody UserEntity userEntity){
-
-        if (userEntityRepository.findByUsername(userEntity.getUsername()).isPresent()) {
-            return "Error! Username already exists";
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN')") // Only Super Admin and Admin can hit this endpoint
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+        try {
+            authService.registerUser(request);
+            return ResponseEntity.ok(new AuthResponse("User registered successfully", null, null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new AuthResponse(e.getMessage(), null, null));
         }
-
-        // Allowed roles
-        Set<String> allowedRoles = Set.of(
-                "USER",
-                "ADMIN",
-                "SUPER_ADMIN",
-                "GUEST"
-        );
-
-        String role = userEntity.getRole();
-
-        if (role == null || role.isBlank()) {
-            role = "USER"; // default
-        } else {
-            role = role.toUpperCase().replace(" ", "_");
-        }
-
-        if (!allowedRoles.contains(role)) {
-            return "Invalid role selected";
-        }
-
-        UserEntity newUser = new UserEntity();
-        newUser.setUsername(userEntity.getUsername());
-        newUser.setPassword(passwordEncoder.encode(userEntity.getPassword()));
-        newUser.setRole(role);
-
-        newUser.setAccountNonLocked(true);
-        newUser.setFailedAttempt(0);
-        newUser.setLockTime(null);
-
-        userEntityRepository.save(newUser);
-
-        return "User registered successfully with role: " + role;
     }
 
-
     @PostMapping("/login")
-    public String loginController(@RequestBody UserEntity userEntity){
-        System.out.println(" userEntity : "+userEntity);
-        UserEntity user = userEntityRepository.findByUsername(userEntity.getUsername())
-                .orElseThrow(()-> new RuntimeException("User not found " + userEntity.getUsername()));
-
-        if (!user.isAccountNonLocked()) {
-            if(user.getLockTime() != null &&
-            Duration.between(user.getLockTime(), LocalDateTime.now()).toMinutes() >= 1){
-                user.setAccountNonLocked(true);
-                user.setFailedAttempt(0);
-                user.setLockTime(null);
-                userEntityRepository.save(user);
-            } else {
-                return "Account is locked. Please try again later!";
-            }
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            // String token = authService.loginUser(request);
+            AuthResponse authResponse = authService.loginUser(loginRequest);
+            return ResponseEntity.ok(authResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(new AuthResponse(e.getMessage(), null, null));
         }
-        try{
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userEntity.getUsername(), userEntity.getPassword())
-            );
-            user.setFailedAttempt(0);
-            user.setLockTime(null);
-            userEntityRepository.save(user);
-            return jwtUtil.generateToken(
-                    user.getUsername(),
-                    user.getRole()
-            );
-        } catch (AuthenticationException e) {
-           userEntityService.increaseFailedAttempts(user);
-            if (user.getFailedAttempt() >= 5) {
-                return "Account has been locked due to 5 failed attempts.";
-            }
-            return "Invalid Password. Attempt " + user.getFailedAttempt() + " of 5";
-        }
-
     }
 
     @PostMapping("/logout")
-    public String logout() {
-        // 1. Get Authentication from context
+    public ResponseEntity<AuthResponse> logout() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
-
-        // 2. Check if the user is actually logged in
-        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
-            return "Error: No active session found to logout.";
+        
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                 .body(new AuthResponse("No active session found", null, null));
         }
 
-        // 3. Get username safely
-        String username = auth.getName();
+        UserEntity user = userEntityRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 4. Update the database
-        UserEntity user = userEntityRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
-
+        // Revoke tokens on logout
         user.setLastLogoutDate(LocalDateTime.now());
+        user.setRefreshToken(null);
+        user.setRefreshTokenExpiry(null);
         userEntityRepository.save(user);
-
-        // 5. Clear the Security Context for this specific request
         SecurityContextHolder.clearContext();
 
-        return "Successfully logged out. Your token is now invalidated.";
+        return ResponseEntity.ok(new AuthResponse("Successfully logged out", null, null));
     }
 
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody TokenRefreshRequest request) {
+        
+        try {
+            AuthResponse response = authService.refreshAccessToken(request.getRefreshToken());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new AuthResponse(e.getMessage(), null, null));
+        }
+    }
+
+    // Inside AuthController.java
+
+@GetMapping("/users")
+// @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'USER')") // Everyone logged in should see this to place orders
+public ResponseEntity<List<UserSummaryDTO>> getAllUsers() {
+    List<UserSummaryDTO> users = userEntityRepository.findAll().stream()
+            .map(user -> new UserSummaryDTO(user.getId(), user.getUsername()))
+            .toList();
+    return ResponseEntity.ok(users);
+}
 }

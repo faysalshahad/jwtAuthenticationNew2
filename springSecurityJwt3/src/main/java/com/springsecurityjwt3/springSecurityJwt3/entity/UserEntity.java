@@ -1,12 +1,24 @@
 package com.springsecurityjwt3.springSecurityJwt3.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
 public class UserEntity {
 
     @Id
@@ -26,88 +38,13 @@ public class UserEntity {
 
     private LocalDateTime lastLogoutDate;
 
-    public UserEntity() {
-    }
+    //Refresh Token Features
+    private String refreshToken;
+    private LocalDateTime refreshTokenExpiry;
 
-    public UserEntity(Long id,
-                      String username,
-                      String password,
-                      String role,
-                      boolean accountNonLocked,
-                      int failedAttempt,
-                      LocalDateTime lockTime,
-                      LocalDateTime lastLogoutDate) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.role = role;
-        this.accountNonLocked = accountNonLocked;
-        this.failedAttempt = failedAttempt;
-        this.lockTime = lockTime;
-        this.lastLogoutDate = lastLogoutDate;
-    }
+    //Item
+    // @OneToMany(mappedBy = "createdBy")
+    // @JsonIgnore
+    // private List<Item> items;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public boolean isAccountNonLocked() {
-        return accountNonLocked;
-    }
-
-    public void setAccountNonLocked(boolean accountNonLocked) {
-        this.accountNonLocked = accountNonLocked;
-    }
-
-    public int getFailedAttempt() {
-        return failedAttempt;
-    }
-
-    public void setFailedAttempt(int failedAttempt) {
-        this.failedAttempt = failedAttempt;
-    }
-
-    public LocalDateTime getLockTime() {
-        return lockTime;
-    }
-
-    public void setLockTime(LocalDateTime lockTime) {
-        this.lockTime = lockTime;
-    }
-
-    public LocalDateTime getLastLogoutDate() {
-        return lastLogoutDate;
-    }
-
-    public void setLastLogoutDate(LocalDateTime lastLogoutDate) {
-        this.lastLogoutDate = lastLogoutDate;
-    }
 }

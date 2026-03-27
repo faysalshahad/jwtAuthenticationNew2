@@ -3,6 +3,7 @@ package com.springsecurityjwt3.springSecurityJwt3;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 @SpringBootApplication
 public class SpringSecurityJwt3Application {
@@ -23,8 +24,19 @@ public class SpringSecurityJwt3Application {
 		// Manually set them as System Properties so Spring @Value can see them
 		dotenv.entries().forEach(dotenvEntry -> System.setProperty(dotenvEntry.getKey(),dotenvEntry.getValue()));
 
-		SpringApplication.run(SpringSecurityJwt3Application.class, args);
-		System.out.println("\n\nPort: 8443\n\nApplication Running Successfully.\n\n");
+		// SpringApplication.run(SpringSecurityJwt3Application.class, args);
+		// System.out.println("\n\nPort: 8443\n\nApplication Running Successfully.\n\n");
+		// System.out.println("\n\nPort: 8080\n\nApplication Running Successfully.\n\n");
+
+
+		     // Run the application and capture the context
+        ConfigurableEnvironment env = SpringApplication.run(SpringSecurityJwt3Application.class, args).getEnvironment();
+		   // Get the actual port from the environment
+        String port = env.getProperty("server.port", "8080"); // Default to 8080 if not set
+        
+        // Print the actual port
+        System.out.println("\n\nPort: " + port + "\n\nApplication Running Successfully.\n\n");
+		
 	}
 
 }

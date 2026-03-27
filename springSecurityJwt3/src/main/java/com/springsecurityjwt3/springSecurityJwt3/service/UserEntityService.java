@@ -3,6 +3,7 @@ package com.springsecurityjwt3.springSecurityJwt3.service;
 import com.springsecurityjwt3.springSecurityJwt3.entity.UserEntity;
 import com.springsecurityjwt3.springSecurityJwt3.repository.UserEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,6 +14,9 @@ import java.time.LocalDateTime;
 
 @Service
 public class UserEntityService implements UserDetailsService {
+
+    @Value("${app.security.max-failed-attempts}")
+    private int maxFailedAttempts;
 
     @Autowired
     private UserEntityRepository userEntityRepository;
@@ -33,7 +37,9 @@ public class UserEntityService implements UserDetailsService {
     public void increaseFailedAttempts(UserEntity userEntity) {
         int newFailAttempts = userEntity.getFailedAttempt() + 1;
         userEntity.setFailedAttempt(newFailAttempts);
-        if(newFailAttempts >= 5){
+
+        // Uses the dynamic value from YAML
+        if(newFailAttempts >= maxFailedAttempts){
             userEntity.setAccountNonLocked(false);
             userEntity.setLockTime(LocalDateTime.now());
         }
@@ -43,6 +49,7 @@ public class UserEntityService implements UserDetailsService {
     public void resetFailedAttempts(String username){
         userEntityRepository.findByUsername(username).ifPresent(userEntityParam ->{
             userEntityParam.setFailedAttempt(0);
+            userEntityParam.setLockTime(null);
             userEntityRepository.save(userEntityParam);
         });
     }
