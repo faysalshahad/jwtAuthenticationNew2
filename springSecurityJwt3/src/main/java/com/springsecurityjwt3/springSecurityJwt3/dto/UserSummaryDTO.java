@@ -1,4 +1,4 @@
-package com.springsecurityjwt3.dto;
+package com.springsecurityjwt3.springSecurityJwt3.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.springsecurityjwt3.dto;
+package com.springsecurityjwt3.springSecurityJwt3.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;

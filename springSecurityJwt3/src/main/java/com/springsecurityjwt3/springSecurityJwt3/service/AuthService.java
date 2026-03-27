@@ -11,10 +11,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.springsecurityjwt3.dto.AuthResponse;
-import com.springsecurityjwt3.dto.LoginRequest;
-import com.springsecurityjwt3.dto.RegisterRequest;
 import com.springsecurityjwt3.springSecurityJwt3.config.JwtUtil;
+import com.springsecurityjwt3.springSecurityJwt3.dto.AuthResponse;
+import com.springsecurityjwt3.springSecurityJwt3.dto.LoginRequest;
+import com.springsecurityjwt3.springSecurityJwt3.dto.RegisterRequest;
 import com.springsecurityjwt3.springSecurityJwt3.entity.UserEntity;
 import com.springsecurityjwt3.springSecurityJwt3.repository.UserEntityRepository;
 

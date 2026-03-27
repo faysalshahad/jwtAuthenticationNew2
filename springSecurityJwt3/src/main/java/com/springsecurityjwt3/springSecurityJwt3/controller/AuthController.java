@@ -1,10 +1,10 @@
 package com.springsecurityjwt3.springSecurityJwt3.controller;
 
-import com.springsecurityjwt3.dto.AuthResponse;
-import com.springsecurityjwt3.dto.LoginRequest;
-import com.springsecurityjwt3.dto.RegisterRequest;
-import com.springsecurityjwt3.dto.TokenRefreshRequest;
-import com.springsecurityjwt3.dto.UserSummaryDTO;
+import com.springsecurityjwt3.springSecurityJwt3.dto.AuthResponse;
+import com.springsecurityjwt3.springSecurityJwt3.dto.LoginRequest;
+import com.springsecurityjwt3.springSecurityJwt3.dto.RegisterRequest;
+import com.springsecurityjwt3.springSecurityJwt3.dto.TokenRefreshRequest;
+import com.springsecurityjwt3.springSecurityJwt3.dto.UserSummaryDTO;
 import com.springsecurityjwt3.springSecurityJwt3.entity.UserEntity;
 import com.springsecurityjwt3.springSecurityJwt3.repository.UserEntityRepository;
 import com.springsecurityjwt3.springSecurityJwt3.service.AuthService;

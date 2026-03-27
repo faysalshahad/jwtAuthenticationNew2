@@ -1,4 +1,5 @@
-package com.springsecurityjwt3.dto;
+package com.springsecurityjwt3.springSecurityJwt3.dto;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,10 +12,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class RegisterRequest {
+public class TokenRefreshRequest {
 
-    private String username;
-    private String password;
-    private String role;
+    private String refreshToken;
 
 }

@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.springsecurityjwt3.dto.ItemDTO;
-import com.springsecurityjwt3.dto.UserSummaryDTO;
+import com.springsecurityjwt3.springSecurityJwt3.dto.ItemDTO;
+import com.springsecurityjwt3.springSecurityJwt3.dto.UserSummaryDTO;
 import com.springsecurityjwt3.springSecurityJwt3.entity.Item;
 import com.springsecurityjwt3.springSecurityJwt3.service.ItemService;
 
