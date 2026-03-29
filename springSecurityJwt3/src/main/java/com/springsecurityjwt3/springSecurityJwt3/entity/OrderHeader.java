@@ -31,8 +31,8 @@ public class OrderHeader {
     private LocalDateTime orderDate;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private UserEntity user; // The user assigned to the order
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     @OneToMany(mappedBy = "orderHeader", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

@@ -61,58 +61,101 @@ public class AuthService {
 
     }
 
-    public AuthResponse loginUser(LoginRequest loginRequest){
-        // Authentication logic is handled by Spring Security's filter chain, so we just need to generate the JWT if authentication is successful.
+//     public AuthResponse loginUser(LoginRequest loginRequest){
+//         // Authentication logic is handled by Spring Security's filter chain, so we just need to generate the JWT if authentication is successful.
+//         UserEntity userEntity = userEntityRepository.findByUsername(loginRequest.getUsername())
+//                 .orElseThrow(() -> new RuntimeException("User Not Found: " + loginRequest.getUsername()));
+
+//         // Check if account is locked before proceeding with authentication        
+//         handleLockoutStatus(userEntity);
+
+//         try {
+//             authenticationManager.authenticate(
+//                     new UsernamePasswordAuthenticationToken(
+//                             loginRequest.getUsername(),
+//                             loginRequest.getPassword()
+//                     )
+//             );
+
+//             // Success: Reset failed attempts
+//             userEntity.setFailedAttempt(0);
+//             userEntity.setLockTime(null);
+
+//             // Generate JWT Token
+//             String accessToken = jwtUtil.generateToken(userEntity.getUsername(), userEntity.getRole());
+//             // Generate Refresh Token
+//             String refreshToken = jwtUtil.generateRefreshToken();
+
+//             userEntity.setRefreshToken(refreshToken);
+//             userEntity.setRefreshTokenExpiry(LocalDateTime.now().plusDays(refreshTokenDuration));
+//             userEntityRepository.save(userEntity);
+
+            
+//         return new AuthResponse("Login successful", accessToken, refreshToken);
+        
+//         } catch (AuthenticationException e) {
+//             userEntityService.increaseFailedAttempts(userEntity);
+//             throw new RuntimeException("Invalid credentials. Attempt " + userEntity.getFailedAttempt() + " of 5.");
+//         }
+        
+//     }
+
+//     public AuthResponse refreshAccessToken(String refreshTokenRequest) {
+//     UserEntity user = userEntityRepository.findByRefreshToken(refreshTokenRequest)
+//             .orElseThrow(() -> new RuntimeException("Invalid Refresh Token"));
+
+//     if (user.getRefreshTokenExpiry().isBefore(LocalDateTime.now())) {
+//         throw new RuntimeException("Refresh Token expired. Please login again.");
+//     }
+
+//     // Generate NEW Access Token
+//     String newAccessToken = jwtUtil.generateToken(user.getUsername(), user.getRole());
+    
+//     return new AuthResponse("Token refreshed", newAccessToken, user.getRefreshToken());
+// }
+
+public AuthResponse loginUser(LoginRequest loginRequest) {
         UserEntity userEntity = userEntityRepository.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new RuntimeException("User Not Found: " + loginRequest.getUsername()));
 
-        // Check if account is locked before proceeding with authentication        
         handleLockoutStatus(userEntity);
 
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.getUsername(),
-                            loginRequest.getPassword()
-                    )
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
-            // Success: Reset failed attempts
             userEntity.setFailedAttempt(0);
             userEntity.setLockTime(null);
 
-            // Generate JWT Token
             String accessToken = jwtUtil.generateToken(userEntity.getUsername(), userEntity.getRole());
-            // Generate Refresh Token
             String refreshToken = jwtUtil.generateRefreshToken();
 
             userEntity.setRefreshToken(refreshToken);
             userEntity.setRefreshTokenExpiry(LocalDateTime.now().plusDays(refreshTokenDuration));
             userEntityRepository.save(userEntity);
 
-            
-        return new AuthResponse("Login successful", accessToken, refreshToken);
+            // Return everything to the controller; the controller decides what to hide in cookies
+            return new AuthResponse("Login successful", userEntity.getRole(), accessToken, refreshToken);
         
         } catch (AuthenticationException e) {
             userEntityService.increaseFailedAttempts(userEntity);
-            throw new RuntimeException("Invalid credentials. Attempt " + userEntity.getFailedAttempt() + " of 5.");
+            throw new RuntimeException("Invalid credentials.");
         }
-        
     }
 
     public AuthResponse refreshAccessToken(String refreshTokenRequest) {
-    UserEntity user = userEntityRepository.findByRefreshToken(refreshTokenRequest)
-            .orElseThrow(() -> new RuntimeException("Invalid Refresh Token"));
+        UserEntity user = userEntityRepository.findByRefreshToken(refreshTokenRequest)
+                .orElseThrow(() -> new RuntimeException("Invalid Refresh Token"));
 
-    if (user.getRefreshTokenExpiry().isBefore(LocalDateTime.now())) {
-        throw new RuntimeException("Refresh Token expired. Please login again.");
+        if (user.getRefreshTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Refresh Token expired. Please login again.");
+        }
+
+        String newAccessToken = jwtUtil.generateToken(user.getUsername(), user.getRole());
+        // Return new access token and keep same refresh token
+        return new AuthResponse("Token refreshed", user.getRole(), newAccessToken, user.getRefreshToken());
     }
-
-    // Generate NEW Access Token
-    String newAccessToken = jwtUtil.generateToken(user.getUsername(), user.getRole());
-    
-    return new AuthResponse("Token refreshed", newAccessToken, user.getRefreshToken());
-}
 
     public void handleLockoutStatus(UserEntity userEntity) {
         if (!userEntity.isAccountNonLocked()) {

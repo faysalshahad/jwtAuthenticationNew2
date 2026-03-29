@@ -86,7 +86,7 @@ public class SecurityConfig {
                                 // // Publicly accessible Login Endpoint
                                 // .requestMatchers("/auth/refresh").permitAll()
                                 // Requires a token
-                                 .requestMatchers("/auth/register", "/auth/users", "/auth/api/**").authenticated()
+                                 .requestMatchers("/auth/register", "/auth/**", "/auth/api/**").authenticated()
                                 // Requires a token
                                 .requestMatchers("/auth/logout").authenticated()
                                 .anyRequest().authenticated()
@@ -119,7 +119,9 @@ public class SecurityConfig {
         // Allow the headers React sends (JWT and JSON)
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         // Allow credentials (cookies, authorization headers)
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // MANDATORY for cookies
+        // Add "Set-Cookie" to your allowed headers just in case
+        configuration.setExposedHeaders(List.of("Set-Cookie"));
         // How long the browser should cache preflight response (in seconds)
         configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

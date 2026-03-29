@@ -17,8 +17,23 @@ import lombok.ToString;
 public class AuthResponse {
 
     private String message;
+    private String role;
     private String accessToken;
     private String refreshToken;
+
+    // Helper constructor for Cookie-based login (no tokens in body)
+    public AuthResponse(String message, String role) {
+        this.message = message;
+        this.role = role;
+    }
+
+//     // Customized Constructor
+//     public AuthResponse(String message, String role) {
+//         this.message = message;
+//         this.role = role;
+//         this.accessToken = null;
+//         this.refreshToken = null;
+// }
     
 
 }
