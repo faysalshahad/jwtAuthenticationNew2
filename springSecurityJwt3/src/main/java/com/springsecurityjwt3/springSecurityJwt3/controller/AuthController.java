@@ -1,32 +1,28 @@
 package com.springsecurityjwt3.springSecurityJwt3.controller;
 
-import com.springsecurityjwt3.springSecurityJwt3.dto.AuthResponse;
-import com.springsecurityjwt3.springSecurityJwt3.dto.LoginRequest;
-import com.springsecurityjwt3.springSecurityJwt3.dto.RegisterRequest;
-import com.springsecurityjwt3.springSecurityJwt3.dto.TokenRefreshRequest;
-import com.springsecurityjwt3.springSecurityJwt3.dto.UserSummaryDTO;
-import com.springsecurityjwt3.springSecurityJwt3.entity.UserEntity;
-import com.springsecurityjwt3.springSecurityJwt3.repository.UserEntityRepository;
-import com.springsecurityjwt3.springSecurityJwt3.service.AuthService;
-
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-// import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.http.HttpHeaders;
-// import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import com.springsecurityjwt3.springSecurityJwt3.dto.AuthResponse;
+import com.springsecurityjwt3.springSecurityJwt3.dto.LoginRequest;
+import com.springsecurityjwt3.springSecurityJwt3.dto.RegisterRequest;
+import com.springsecurityjwt3.springSecurityJwt3.dto.UserSummaryDTO;
+import com.springsecurityjwt3.springSecurityJwt3.repository.UserEntityRepository;
+import com.springsecurityjwt3.springSecurityJwt3.service.AuthService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/auth")
@@ -96,13 +92,13 @@ public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
     // Create the Refresh Token Cookie
     ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", authResponse.getRefreshToken())
             .httpOnly(true)
-            .secure(false) // Set to 'true' in production
+            .secure(false) // Set to 'true' in production 
             .path("/")
             .maxAge(1 * 24 * 60 * 60) // 1 days
             .sameSite("Strict")
             .build();
 
-     // 3. Return only message and role in the body
+     // Return only message and role in the body
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
@@ -141,7 +137,7 @@ public ResponseEntity<?> logout(HttpServletRequest request) {
             .secure(false) // Set to true in production (HTTPS)
             .path("/")
             .maxAge(0)    // Tells browser to delete it immediately
-            .sameSite("Strict")
+            .sameSite("Strict") // CSRF protection
             .build();
 
     // 2. Create a "Clear" cookie for Refresh Token
@@ -150,7 +146,7 @@ public ResponseEntity<?> logout(HttpServletRequest request) {
             .secure(false)
             .path("/")
             .maxAge(0)    // Tells browser to delete it immediately
-            .sameSite("Strict")
+            .sameSite("Strict") // CSRF protection
             .build();
 
     // Optional: Update the database to log the logout time (for revocation check)
