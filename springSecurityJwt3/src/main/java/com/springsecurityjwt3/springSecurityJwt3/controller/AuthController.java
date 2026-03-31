@@ -77,29 +77,29 @@ public class AuthController {
     // }
 
     @PostMapping("/login")
-public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-    AuthResponse authResponse = authService.loginUser(request);
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        AuthResponse authResponse = authService.loginUser(request);
 
-    // Create the Access Token Cookie
-    ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", authResponse.getAccessToken())
-            .httpOnly(true)
-            .secure(false) // Set to 'true' in production with HTTPS
-            .path("/")
-            .maxAge(1 * 60) // 1 minutes
-            .sameSite("Strict")
-            .build();
+        // Create the Access Token Cookie
+        ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", authResponse.getAccessToken())
+                .httpOnly(true)
+                .secure(false) // Set to 'true' in production with HTTPS
+                .path("/")
+                .maxAge(1 * 60) // 1 minutes
+                .sameSite("Strict")
+                .build();
 
-    // Create the Refresh Token Cookie
-    ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", authResponse.getRefreshToken())
-            .httpOnly(true)
-            .secure(false) // Set to 'true' in production 
-            .path("/")
-            .maxAge(1 * 24 * 60 * 60) // 1 days
-            .sameSite("Strict")
-            .build();
+        // Create the Refresh Token Cookie
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", authResponse.getRefreshToken())
+                .httpOnly(true)
+                .secure(false) // Set to 'true' in production 
+                .path("/")
+                .maxAge(1 * 24 * 60 * 60) // 1 days
+                .sameSite("Strict")
+                .build();
 
-     // Return only message and role in the body
-        return ResponseEntity.ok()
+        // Return only message and role in the body
+         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(new AuthResponse(authResponse.getMessage(), authResponse.getRole()));
@@ -130,34 +130,34 @@ public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
 
 
     @PostMapping("/logout")
-public ResponseEntity<?> logout(HttpServletRequest request) {
-    // 1. Create a "Clear" cookie for Access Token
-    ResponseCookie clearAccessToken = ResponseCookie.from("accessToken", "")
-            .httpOnly(true)
-            .secure(false) // Set to true in production (HTTPS)
-            .path("/")
-            .maxAge(0)    // Tells browser to delete it immediately
-            .sameSite("Strict") // CSRF protection
-            .build();
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        // 1. Create a "Clear" cookie for Access Token
+        ResponseCookie clearAccessToken = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(false) // Set to true in production (HTTPS)
+                .path("/")
+                .maxAge(0)    // Tells browser to delete it immediately
+                .sameSite("Strict") // CSRF protection
+                .build();
 
-    // 2. Create a "Clear" cookie for Refresh Token
-    ResponseCookie clearRefreshToken = ResponseCookie.from("refreshToken", "")
-            .httpOnly(true)
-            .secure(false)
-            .path("/")
-            .maxAge(0)    // Tells browser to delete it immediately
-            .sameSite("Strict") // CSRF protection
-            .build();
+        // 2. Create a "Clear" cookie for Refresh Token
+        ResponseCookie clearRefreshToken = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)    // Tells browser to delete it immediately
+                .sameSite("Strict") // CSRF protection
+                .build();
 
-    // Optional: Update the database to log the logout time (for revocation check)
-    // String username = jwtUtil.getuserNameFromToken(extractTokenFromCookie(request));
-    // authService.processLogout(username);
+        // Optional: Update the database to log the logout time (for revocation check)
+        // String username = jwtUtil.getuserNameFromToken(extractTokenFromCookie(request));
+        // authService.processLogout(username);
 
-    return ResponseEntity.ok()
+        return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, clearAccessToken.toString())
             .header(HttpHeaders.SET_COOKIE, clearRefreshToken.toString())
             .body(Map.of("message", "Logged out successfully"));
-}
+    }
 
     // @PostMapping("/refresh")
     // public ResponseEntity<AuthResponse> refresh(@RequestBody TokenRefreshRequest request) {
@@ -202,11 +202,11 @@ public ResponseEntity<?> logout(HttpServletRequest request) {
 
     // Inside AuthController.java
 
-@GetMapping("/users")
-// @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'USER')") // Everyone logged in should see this to place orders
-public ResponseEntity<List<UserSummaryDTO>> getAllUsers() {
-    List<UserSummaryDTO> users = userEntityRepository.findAll().stream()
-            .map(user -> new UserSummaryDTO(user.getId(), user.getUsername()))
+    @GetMapping("/users")
+    // @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ADMIN', 'USER')") // Everyone logged in should see this to place orders
+    public ResponseEntity<List<UserSummaryDTO>> getAllUsers() {
+        List<UserSummaryDTO> users = userEntityRepository.findAll().stream()
+                    .map(user -> new UserSummaryDTO(user.getId(), user.getUsername()))
             .toList();
     return ResponseEntity.ok(users);
 }
