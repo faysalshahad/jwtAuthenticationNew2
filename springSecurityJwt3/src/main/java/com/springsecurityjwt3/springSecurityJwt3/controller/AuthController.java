@@ -186,7 +186,11 @@ public ResponseEntity<?> logout(HttpServletRequest request) {
             AuthResponse response = authService.refreshAccessToken(refreshToken);
 
             ResponseCookie newAccessCookie = ResponseCookie.from("accessToken", response.getAccessToken())
-                    .httpOnly(true).path("/").maxAge(15 * 60).sameSite("Strict").build();
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(15 * 60)
+                    .sameSite("Strict")
+                    .build();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, newAccessCookie.toString())
