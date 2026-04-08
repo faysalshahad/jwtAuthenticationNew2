@@ -3,5 +3,9 @@
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "notebook.defaultFormatter": "esbenp.prettier-vscode",
-  "java.compile.nullAnalysis.mode": "automatic"
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "[xml]": {
+    "editor.defaultFormatter": "Oracle.oracle-java"
+  }
 }

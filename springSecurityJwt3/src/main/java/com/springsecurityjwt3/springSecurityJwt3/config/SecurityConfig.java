@@ -1,6 +1,7 @@
 package com.springsecurityjwt3.springSecurityJwt3.config;
 
-import com.springsecurityjwt3.springSecurityJwt3.service.UserEntityService;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,8 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
+import com.springsecurityjwt3.springSecurityJwt3.service.UserEntityService;
 
 @Configuration
 @EnableWebSecurity
@@ -34,78 +34,91 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
 
-    //@Value("${app.security.pepper}")
-//    private final String PEPPERSECRETKEY = "4AnRtF;gZQ9wNDxC";
+    // @Value("${app.security.pepper}")
+    // private final String PEPPERSECRETKEY = "4AnRtF;gZQ9wNDxC";
 
     @Value("${app.security.pepper}")
     private String PEPPERSECRETKEY;
 
+    // Define Swagger/OpenAPI endpoints that should be public
+    private static final String[] SWAGGER_WHITELIST = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/v3/api-docs",
+            "/swagger-resources/**",
+            "/swagger-resources",
+            "/webjars/**"
+    };
+
     // Modern Approach
 
-//    private final UserEntityService userEntityService;
-//    private final JwtFilter jwtFilter;
-//    private final String pepperSecretKey;
-//
-//    @Autowired
-//    public SecurityConfig(
-//            UserEntityService userEntityService,
-//            JwtFilter jwtFilter,
-//            @Value("${app.security.pepper}") String pepperSecretKey
-//    ) {
-//        this.userEntityService = userEntityService;
-//        this.jwtFilter = jwtFilter;
-//        this.pepperSecretKey = pepperSecretKey;
-//    }
+    // private final UserEntityService userEntityService;
+    // private final JwtFilter jwtFilter;
+    // private final String pepperSecretKey;
+    //
+    // @Autowired
+    // public SecurityConfig(
+    // UserEntityService userEntityService,
+    // JwtFilter jwtFilter,
+    // @Value("${app.security.pepper}") String pepperSecretKey
+    // ) {
+    // this.userEntityService = userEntityService;
+    // this.jwtFilter = jwtFilter;
+    // this.pepperSecretKey = pepperSecretKey;
+    // }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder(){
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder() {
             @Override
-            public String encode(CharSequence rawPassword){
+            public String encode(CharSequence rawPassword) {
                 return super.encode(rawPassword + PEPPERSECRETKEY);
             }
 
             @Override
-            public boolean matches(CharSequence rawPassword, String encodedPassword){
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
                 return super.matches(rawPassword + PEPPERSECRETKEY, encodedPassword);
             }
         };
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf(csrf -> csrf.disable())
-//                .csrf(AbstractHttpConfigurer::disable)
+                // .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                                // Publicly accessible Login Endpoint
-                                .requestMatchers("/auth/login", "/auth/refresh").permitAll()
-                                // // Publicly accessible Login Endpoint
-                                // .requestMatchers("/auth/refresh").permitAll()
-                                // Requires a token
-                                 .requestMatchers("/auth/register", "/auth/**", "/auth/api/**").authenticated()
-                                // Requires a token
-                                .requestMatchers("/auth/logout").authenticated()
-                                .anyRequest().authenticated()
-                        )
+                        // Publicly accessible Swagger UI endpoints
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                        // Publicly accessible Login Endpoint
+                        .requestMatchers("/auth/login", "/auth/refresh").permitAll()
+                        // // Publicly accessible Login Endpoint
+                        // .requestMatchers("/auth/refresh").permitAll()
+                        // Requires a token
+                        .requestMatchers("/auth/register", "/auth/**", "/auth/api/**").authenticated()
+                        // Requires a token
+                        .requestMatchers("/auth/logout").authenticated()
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws  Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider(){
-        //DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider()
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        // DaoAuthenticationProvider authenticationProvider = new
+        // DaoAuthenticationProvider()
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userEntityService);
-        //authenticationProvider.setUserDetailsService(userEntityService);
+        // authenticationProvider.setUserDetailsService(userEntityService);
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
@@ -113,15 +126,29 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Vite dev server
+// Combine both origins in a single list
+    configuration.setAllowedOrigins(List.of(
+        "http://localhost:5173",  // Vite React app
+        "http://localhost:8080"   // Swagger UI origin
+    ));
         // Allow all common HTTP methods
-        configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Allow the headers React sends (JWT and JSON)
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        // Allow all headers that Swagger UI and your API might need
+        configuration.setAllowedHeaders(List.of(
+            "Authorization",
+            "Content-Type", 
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true); // MANDATORY for cookies
         // Add "Set-Cookie" to your allowed headers just in case
-        configuration.setExposedHeaders(List.of("Set-Cookie"));
+        configuration.setExposedHeaders(List.of("Set-Cookie", "Authorization"));
         // How long the browser should cache preflight response (in seconds)
         configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
