@@ -145,6 +145,7 @@ public class SecurityConfig {
 // Combine both origins in a single list
     configuration.setAllowedOrigins(List.of(
         "http://localhost:8000",  // Vite React app
+        "http://172.20.1.225:8000", // Refereing to PC's local IP address for access from other devices in the same network
         "http://localhost:8080"   // Swagger UI origin
     ));
         // Allow all common HTTP methods

@@ -19,7 +19,7 @@ import com.springsecurityjwt3.core.entity.OrderLine;
 import com.springsecurityjwt3.security.service.OrderService;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/auth/orders")
 public class OrderController {
     @Autowired
     private OrderService orderService;

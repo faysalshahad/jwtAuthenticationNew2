@@ -17,7 +17,7 @@ import com.springsecurityjwt3.core.entity.Item;
 import com.springsecurityjwt3.security.service.ItemService;
 
 @RestController
-@RequestMapping("/api/items")
+@RequestMapping("/auth/items")
 public class ItemController {
     @Autowired 
     private ItemService itemService;
