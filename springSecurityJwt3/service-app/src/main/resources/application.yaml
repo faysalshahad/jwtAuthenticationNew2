@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: Spring Security Jwt 3
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/secjwt3
+    username: postgres
+    password: ${DB_PASSWORD_ENV} # Reads from .env
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+# server:
+#   port: 8443 # HTTPS port
+
+server:
+  port: 8080 # HTTP port
+
+app:
+  jwt:
+    secret: ${JWT_SECRET_ENV} # Reads from .env
+  security:
+    pepper: ${PEPPER_KEY_ENV} # Reads from .env
+    max-failed-attempts: ${MAX_FAILED_ATTEMPTS_ENV} # Reads from .env
+    lockout-duration-minutes: ${LOCKOUT_DURATION_MINUTES_ENV} # Reads from .env
+    expiration-time-access-token: ${EXPIRATION_TIME_ACCESS_TOKEN_ENV} # Reads from .env
+    expiration-time-refresh-token: ${EXPIRATION_TIME_REFRESH_TOKEN_ENV} # Reads from .env
+
