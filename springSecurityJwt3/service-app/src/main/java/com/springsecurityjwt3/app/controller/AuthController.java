@@ -82,14 +82,16 @@ public class AuthController {
         // }
 
         @PostMapping("/login")
-        public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+        public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
                 AuthResponse authResponse = authService.loginUser(request);
+                String domain = httpRequest.getServerName(); // Get the domain
 
                 // Create the Access Token Cookie
                 ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", authResponse.getAccessToken())
                                 .httpOnly(true)
                                 .secure(false) // Set to 'true' in production with HTTPS
                                 .path("/")
+                                .domain(domain) // Set the domain dynamically
                                 .maxAge(1 * 60) // 1 minutes
                                 .sameSite("Strict")
                                 .build();
@@ -99,6 +101,7 @@ public class AuthController {
                                 .httpOnly(true)
                                 .secure(false) // Set to 'true' in production
                                 .path("/")
+                                .domain(domain) // Set the domain dynamically
                                 .maxAge(1 * 24 * 60 * 60) // 1 days
                                 .sameSite("Strict")
                                 .build();

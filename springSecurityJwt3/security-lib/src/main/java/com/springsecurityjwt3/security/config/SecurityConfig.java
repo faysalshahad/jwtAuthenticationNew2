@@ -51,7 +51,9 @@ public class SecurityConfig {
             "/v3/api-docs",
             "/swagger-resources/**",
             "/swagger-resources",
-            "/webjars/**"
+            "/webjars/**",
+            "/configuration/ui",
+        "/configuration/security"
     };
 
     // Modern Approach
@@ -101,7 +103,8 @@ public class SecurityConfig {
                         // // Publicly accessible Login Endpoint
                         // .requestMatchers("/auth/refresh").permitAll()
                         // Requires a token
-                        // .requestMatchers("/auth/register", "/auth/**", "/auth/api/**").authenticated()
+                        // .requestMatchers("/auth/register", "/auth/**",
+                        // "/auth/api/**").authenticated()
                         // Requires a token
                         .requestMatchers("/auth/logout").authenticated() // Ensure this is authenticated
                         .anyRequest().authenticated())
@@ -109,16 +112,28 @@ public class SecurityConfig {
 
                 // --- LOGOUT SECTION ---
                 .logout(logout -> logout
-                    .logoutUrl("/auth/logout") // The endpoint to trigger logout
-                    .deleteCookies("accessToken", "refreshToken")
-                    .invalidateHttpSession(true)
-                    .clearAuthentication(true)
-                    .logoutSuccessHandler((request, response, authentication) ->{
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write("{\"message\": \"Logged out successfully.\"}");
-                        response.getWriter().flush();
-                    })
-                );
+                        .logoutUrl("/auth/logout") // The endpoint to trigger logout
+                        .addLogoutHandler((request, response, authentication) -> {
+                            // Dynamically detect the domain (localhost or IP)
+                            String domain = request.getServerName();
+                            // Forcefully overwrite cookies with immediate expiration
+                            for (String cookieName : new String[] { "accessToken", "refreshToken" }) {
+                                jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie(cookieName, null);
+                                cookie.setPath("/"); // CRITICAL: This must match the path used during login
+                                cookie.setDomain(domain); // Using the detected domain
+                                cookie.setHttpOnly(true);
+                                cookie.setMaxAge(0); // Expires immediately
+                                response.addCookie(cookie);
+                            }
+                        })
+                        // .deleteCookies("accessToken", "refreshToken")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write("{\"message\": \"Logged out successfully.\"}");
+                            response.getWriter().flush();
+                        }));
 
         return httpSecurity.build();
     }
@@ -142,26 +157,37 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-// Combine both origins in a single list
-    configuration.setAllowedOrigins(List.of(
-        "http://localhost:8000",  // Vite React app
-        "http://172.20.1.225:8000", // Refereing to PC's local IP address for access from other devices in the same network
-        "http://localhost:8080"   // Swagger UI origin
-    ));
+        // Combine both origins in a single list
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:8000", // Vite React app
+                // Refereing to PC's local IP address for access from other devices in the same
+                // network
+                "http://172.20.1.225:8000", // Refereing to PC's local IP address for access from other devices in the
+                                            // same network
+                "http://192.168.144.1:8000", // Refereing to PC's local IP address for access from other devices in the
+                                             // same network
+                "http://172.29.128.1:8000", // Refereing to PC's local IP address for access from other devices in the
+                                            // same network
+                // Swagger UI origins
+                "http://localhost:8080", // Swagger UI origin
+                "http://172.20.1.225:8080", // Swagger UI origin
+                "http://192.168.144.1:8080", // Swagger UI origin
+                "http://172.29.128.1:8080" // Swagger UI origin
+
+        ));
         // Allow all common HTTP methods
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Allow the headers React sends (JWT and JSON)
         // configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         // Allow all headers that Swagger UI and your API might need
         configuration.setAllowedHeaders(List.of(
-            "Authorization",
-            "Content-Type", 
-            "X-Requested-With",
-            "Accept",
-            "Origin",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
-        ));
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"));
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true); // MANDATORY for cookies
         // Add "Set-Cookie" to your allowed headers just in case
