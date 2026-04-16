@@ -53,7 +53,7 @@ public class SecurityConfig {
             "/swagger-resources",
             "/webjars/**",
             "/configuration/ui",
-        "/configuration/security"
+            "/configuration/security"
     };
 
     // Modern Approach
@@ -181,13 +181,14 @@ public class SecurityConfig {
         // configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         // Allow all headers that Swagger UI and your API might need
         configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"));
+                "Authorization", // For JWT tokens
+                "Content-Type", // For JSON requests
+                "X-Requested-With", // AJAX requests
+                "Accept", // Response format negotiation
+                "Origin", // Original domain
+                "Access-Control-Request-Method", // Preflight
+                "Access-Control-Request-Headers" // Preflight
+        ));
         // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true); // MANDATORY for cookies
         // Add "Set-Cookie" to your allowed headers just in case

@@ -23,3 +23,29 @@ public class ServerMetadata {
         return serverStartTime;
     }
 }
+
+// @Component
+// public class ServerMetadata {
+    
+//     private LocalDateTime serverStartTime;
+//     private String instanceId;  // Add unique instance ID
+    
+//     @PostConstruct
+//     public void init(){
+//         this.serverStartTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+//         this.instanceId = UUID.randomUUID().toString();  // Unique per restart
+//         System.out.println("Server instance " + instanceId + " started at " + serverStartTime);
+//     }
+    
+//     public LocalDateTime getServerStartTime(){
+//         return serverStartTime;
+//     }
+    
+//     public String getInstanceId(){
+//         return instanceId;
+//     }
+    
+//     public boolean isTokenFromCurrentInstance(LocalDateTime tokenIssuedAt) {
+//         return !tokenIssuedAt.isBefore(serverStartTime);
+//     }
+// }
